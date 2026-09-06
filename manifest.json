@@ -4,9 +4,9 @@
   "display": "standalone",
   "name": "Mera Hisab",
   "orientation": "any",
-  "scope": "/",
+  "scope": "/Mera-Hisab-/",
   "short_name": "Mera Hisab",
-  "start_url": "/",
+  "start_url": "/Mera-Hisab-/",
   "theme_color": "#ffffff"
 ,
   "icons": [
