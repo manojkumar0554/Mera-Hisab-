@@ -1,0 +1,1464 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, viewport-fit=cover">
+<title>Mera Hisab</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#1C2B39;
+    --ink-soft:#5B6670;
+    --paper:#EDEEE8;
+    --paper-raised:#F7F7F3;
+    --line:#D8D9D0;
+    --gold:#B8873D;
+    --gold-soft:#E7D5B4;
+    --positive:#3C6E52;
+    --negative:#A6483B;
+    --radius:10px;
+    --nav-h:68px;
+  }
+  *{box-sizing:border-box;}
+  html,body{margin:0;padding:0;}
+  body{
+    background:var(--paper);
+    color:var(--ink);
+    font-family:'Inter',system-ui,sans-serif;
+    -webkit-font-smoothing:antialiased;
+    min-height:100vh;
+  }
+  #app{
+    max-width:480px;
+    margin:0 auto;
+    min-height:100vh;
+    display:flex;
+    flex-direction:column;
+    position:relative;
+    background:var(--paper);
+  }
+  h1,h2,h3,.serif{font-family:'Source Serif 4',Georgia,serif;}
+  button{font-family:inherit;}
+  :focus-visible{outline:2px solid var(--gold);outline-offset:2px;}
+  @media (prefers-reduced-motion: reduce){*{transition:none !important;animation:none !important;}}
+
+  /* Topbar */
+  .topbar{
+    background:var(--ink);
+    color:#F2EFE6;
+    padding:18px 18px 14px;
+    border-bottom:3px solid var(--gold);
+    position:sticky;
+    top:0;
+    z-index:20;
+  }
+  .topbar h1{margin:0;font-size:21px;font-weight:600;letter-spacing:.2px;}
+  .topbar .sub{margin-top:2px;font-size:12px;color:#C9CFD6;}
+
+  /* Main scroll area */
+  main{
+    flex:1;
+    overflow-y:auto;
+    padding:16px 16px calc(var(--nav-h) + 24px);
+  }
+  section.view{display:none;}
+  section.view.active{display:block;animation:fade .15s ease;}
+  @keyframes fade{from{opacity:0}to{opacity:1}}
+
+  /* Hero stat */
+  .hero{
+    padding:18px 4px 16px;
+    border-bottom:1px solid var(--line);
+    margin-bottom:14px;
+  }
+  .hero .label{font-size:12.5px;color:var(--ink-soft);}
+  .hero .value{font-size:34px;font-weight:700;margin-top:2px;}
+  .hero .value.gold{color:var(--gold);}
+  .hero .value.good{color:var(--positive);}
+  .hero .value.bad{color:var(--negative);}
+  .hero-row{display:flex;gap:22px;flex-wrap:wrap;margin-top:10px;}
+  .hero-row .mini{font-size:12.5px;color:var(--ink-soft);}
+  .hero-row .mini b{display:block;font-size:15px;color:var(--ink);font-weight:600;margin-top:1px;}
+
+  /* section titles */
+  .section-title{font-size:15px;font-weight:600;margin:18px 0 8px;color:var(--ink);}
+
+  /* stat rows on dashboard */
+  .stat-row{
+    display:flex;justify-content:space-between;align-items:baseline;
+    padding:10px 2px;border-bottom:1px solid var(--line);
+  }
+  .stat-row .l{font-size:14px;color:var(--ink);}
+  .stat-row .l .sub{display:block;font-size:11.5px;color:var(--ink-soft);margin-top:1px;}
+  .stat-row .v{font-size:15px;font-weight:600;}
+  .stat-row .v.good{color:var(--positive);}
+  .stat-row .v.bad{color:var(--negative);}
+
+  /* add button */
+  .add-btn{
+    display:flex;align-items:center;gap:6px;
+    background:var(--ink);color:#F2EFE6;
+    border:none;border-radius:8px;
+    padding:10px 14px;font-size:13.5px;font-weight:600;
+    cursor:pointer;margin-bottom:14px;
+  }
+  .add-btn:active{background:#13202C;}
+  .add-btn svg{width:15px;height:15px;}
+
+  /* form card */
+  .form-card{
+    background:var(--paper-raised);
+    border:1px solid var(--line);
+    border-radius:var(--radius);
+    padding:14px;
+    margin-bottom:16px;
+    display:none;
+  }
+  .form-card.open{display:block;}
+  .field{margin-bottom:11px;}
+  .field label{display:block;font-size:12px;color:var(--ink-soft);margin-bottom:4px;}
+  .field input,.field select{
+    width:100%;padding:9px 10px;font-size:14.5px;
+    border:1px solid var(--line);border-radius:7px;
+    background:#fff;color:var(--ink);font-family:inherit;
+  }
+  .field-row{display:flex;gap:10px;}
+  .field-row .field{flex:1;}
+  .form-actions{display:flex;gap:8px;margin-top:4px;}
+  .btn{
+    border:none;border-radius:7px;padding:10px 16px;font-size:13.5px;font-weight:600;cursor:pointer;
+  }
+  .btn-primary{background:var(--gold);color:#2A1E0E;}
+  .btn-primary:active{background:#A0762F;}
+  .btn-ghost{background:transparent;color:var(--ink-soft);border:1px solid var(--line);}
+  .btn-danger{background:transparent;color:var(--negative);border:1px solid var(--negative);}
+  .form-error{color:var(--negative);font-size:12px;margin-top:2px;min-height:14px;}
+
+  /* ledger list rows */
+  .ledger-row{
+    border-bottom:1px solid var(--line);
+    padding:12px 2px;cursor:pointer;
+  }
+  .ledger-row .top{display:flex;justify-content:space-between;gap:10px;}
+  .ledger-row .name{font-size:14.5px;font-weight:600;color:var(--ink);}
+  .ledger-row .tag{font-size:11px;color:var(--gold);background:var(--gold-soft);padding:1px 7px;border-radius:20px;margin-left:6px;font-weight:600;}
+  .ledger-row .right{font-size:15px;font-weight:700;white-space:nowrap;}
+  .ledger-row .right.bad{color:var(--negative);}
+  .ledger-row .right.good{color:var(--positive);}
+  .ledger-row .meta{font-size:12px;color:var(--ink-soft);margin-top:3px;}
+  .progress{height:5px;border-radius:4px;background:var(--line);margin-top:8px;overflow:hidden;}
+  .progress > div{height:100%;background:var(--gold);}
+  .done-badge{color:var(--positive);font-weight:600;}
+
+  .row-actions{display:none;gap:8px;margin-top:10px;flex-wrap:wrap;}
+  .row-actions.open{display:flex;}
+  .row-actions .btn{padding:7px 12px;font-size:12.5px;}
+  .quick-amt{display:none;gap:8px;margin-top:9px;}
+  .quick-amt.open{display:flex;}
+  .quick-amt input{flex:1;padding:8px 9px;border:1px solid var(--line);border-radius:7px;font-size:14px;}
+
+  .empty{padding:26px 4px;text-align:center;color:var(--ink-soft);font-size:13.5px;}
+
+  .date-group{font-size:12px;color:var(--ink-soft);margin:14px 0 4px;font-weight:600;}
+  .date-group:first-child{margin-top:0;}
+
+  /* bottom nav */
+  nav.bottomnav{
+    position:sticky;bottom:0;left:0;right:0;
+    background:var(--ink);
+    display:flex;
+    padding-bottom:env(safe-area-inset-bottom,0);
+    z-index:20;
+    border-top:3px solid var(--gold);
+  }
+  nav.bottomnav button{
+    flex:1;background:none;border:none;color:#9FA8B2;
+    display:flex;flex-direction:column;align-items:center;gap:3px;
+    padding:9px 2px 8px;cursor:pointer;
+  }
+  nav.bottomnav button svg{width:20px;height:20px;stroke:currentColor;}
+  nav.bottomnav button span{font-size:9.5px;font-weight:500;letter-spacing:.2px;}
+  nav.bottomnav button.active{color:#F2EFE6;}
+  nav.bottomnav button.active span{color:var(--gold);}
+
+  .loading{padding:60px 20px;text-align:center;color:var(--ink-soft);}
+  .footer-link{display:block;text-align:center;font-size:12px;color:var(--ink-soft);margin-top:22px;text-decoration:underline;background:none;border:none;cursor:pointer;width:100%;}
+
+  .lock-screen{position:fixed;inset:0;background:var(--ink);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;}
+  .lock-box{width:100%;max-width:300px;text-align:center;}
+  .lock-input{width:100%;text-align:center;font-size:22px;letter-spacing:10px;padding:12px;border-radius:8px;border:1px solid var(--line);margin-bottom:10px;font-family:inherit;box-sizing:border-box;}
+</style>
+<script src="https://cdn.sheetjs.com/xlsx-latest/package/dist/xlsx.full.min.js"></script>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
+</head>
+<body>
+<div id="app">
+
+  <div id="lock-screen" class="lock-screen">
+    <div class="lock-box">
+      <h1 class="serif" style="color:#F2EFE6;font-size:24px;margin-bottom:4px;">Mera Hisab</h1>
+      <div id="lock-message" style="color:#C9CFD6;font-size:13px;margin-bottom:16px;"></div>
+      <input type="password" id="lock-pin1" inputmode="numeric" maxlength="4" placeholder="● ● ● ●" class="lock-input">
+      <input type="password" id="lock-pin2" inputmode="numeric" maxlength="4" placeholder="Dobara Likhein" class="lock-input" style="display:none;">
+      <div class="form-error" id="lock-error"></div>
+      <button class="btn btn-primary" id="lock-submit" style="width:100%;margin-top:6px;">Aage Badhein</button>
+      <button class="footer-link" id="forgot-pin-btn" style="color:#9FA8B2;margin-top:14px;">PIN Bhool Gaye?</button>
+    </div>
+  </div>
+
+  <div class="topbar">
+    <h1>Mera Hisab</h1>
+    <div class="sub" id="topbar-date"></div>
+  </div>
+
+  <main id="loading-screen" class="loading">Data load ho raha hai…</main>
+
+  <main id="main-content" style="display:none;">
+
+    <!-- DASHBOARD -->
+    <section class="view active" id="view-dashboard">
+      <div class="hero">
+        <div class="label">Sabhi Bank Mila Ke Balance</div>
+        <div class="value gold" id="dash-total-balance">₹0</div>
+      </div>
+      <div class="section-title">Is Mahine Ka Kharcha</div>
+      <div class="stat-row"><div class="l">Aaj</div><div class="v" id="dash-today">₹0</div></div>
+      <div class="stat-row"><div class="l">Is Hafte</div><div class="v" id="dash-week">₹0</div></div>
+      <div class="stat-row"><div class="l">Is Mahine</div><div class="v" id="dash-month">₹0</div></div>
+
+      <div class="section-title">Har Mahine Ka Bojh</div>
+      <div class="stat-row"><div class="l">EMI (chalu)<span class="sub" id="dash-emi-count-sub"></span></div><div class="v bad" id="dash-emi-monthly">₹0</div></div>
+      <div class="stat-row"><div class="l">SIP<span class="sub" id="dash-sip-count-sub"></span></div><div class="v" id="dash-sip-monthly">₹0</div></div>
+
+      <div class="section-title">Bakaya (Pending)</div>
+      <div class="stat-row"><div class="l">EMI Baccha Hua</div><div class="v bad" id="dash-emi-remaining">₹0</div></div>
+      <div class="stat-row"><div class="l">Udhar Baccha Hua</div><div class="v bad" id="dash-udhar-remaining">₹0</div></div>
+      <div class="stat-row"><div class="l">SIP Ab Tak Jama</div><div class="v good" id="dash-sip-invested">₹0</div></div>
+
+      <div class="section-title">Excel Report</div>
+      <div class="meta" style="margin-bottom:10px;">Sara data (kharcha category-wise mahine ke hisaab se, EMI, Banks, SIP, Udhar) ek Excel file me.</div>
+      <button class="add-btn" id="excel-export-btn">Excel Report Download Karo</button>
+
+      <div class="section-title">Data Surakshit Rakhein</div>
+      <div class="meta" style="margin-bottom:10px;">Phone kho jaye to sirf yahi backup file tumhara data wapas dila sakti hai. Ise WhatsApp (khud ko), Email, ya Google Drive me hafte me ek baar zaroor save kar lo.</div>
+      <div class="form-actions" style="margin-bottom:6px;">
+        <button class="btn btn-primary" id="backup-btn">Backup Download Karo</button>
+        <button class="btn btn-ghost" id="restore-btn">Backup Se Restore Karo</button>
+      </div>
+      <input type="file" id="restore-input" accept="application/json" style="display:none;">
+      <div class="meta" id="last-backup-note" style="margin-bottom:16px;"></div>
+
+      <div class="section-title">Google Drive Se Auto-Sync</div>
+      <div class="meta" id="drive-status-note" style="margin-bottom:10px;">Google Drive se judne ke liye button dabao.</div>
+      <button class="add-btn" id="drive-connect-btn">Google Se Judiye (Auto Backup)</button>
+      <div class="form-actions" id="drive-actions" style="display:none;margin-bottom:16px;">
+        <button class="btn btn-primary" id="drive-sync-now-btn">Ab Turant Sync Karo</button>
+        <button class="btn btn-ghost" id="drive-restore-btn">Drive Se Wapas Lao</button>
+      </div>
+
+      <button class="footer-link" id="reset-all-btn">Sab Data Clear Karein</button>
+      <button class="footer-link" id="change-pin-btn">PIN Badlein</button>
+    </section>
+
+    <!-- EMI -->
+    <section class="view" id="view-emi">
+      <div class="hero">
+        <div class="label">Total EMI Baccha Hua</div>
+        <div class="value bad" id="emi-hero-remaining">₹0</div>
+        <div class="hero-row">
+          <div class="mini">Har Mahine<b id="emi-hero-monthly">₹0</b></div>
+          <div class="mini">Chalu EMI<b id="emi-hero-count">0</b></div>
+        </div>
+      </div>
+
+      <button class="add-btn" id="emi-add-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Naya EMI Add Karo
+      </button>
+
+      <div class="form-card" id="emi-form">
+        <div class="field"><label>EMI Ka Naam (jaise: Bike Loan)</label><input type="text" id="emi-name" placeholder="Naam likhein"></div>
+        <div class="field-row">
+          <div class="field"><label>Category</label>
+            <select id="emi-category">
+              <option>Home Loan</option><option>Car Loan</option><option>Bike Loan</option>
+              <option>Personal Loan</option><option>Credit Card</option><option>Electronics</option>
+              <option>Education</option><option>Other</option>
+            </select>
+          </div>
+          <div class="field"><label>Bank Ka Naam (Banks tab jaisa hi naam likhein, tabhi paisa auto katega)</label><input type="text" id="emi-bank" list="bank-names-list" placeholder="Jaise: SBI"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Total Amount (₹)</label><input type="number" inputmode="decimal" id="emi-total" placeholder="0"></div>
+          <div class="field"><label>EMI / Mahina (₹)</label><input type="number" inputmode="decimal" id="emi-amount" placeholder="0"></div>
+        </div>
+        <div class="field-row">
+          <div class="field"><label>Total Months (Tenure)</label><input type="number" inputmode="numeric" id="emi-months" placeholder="0"></div>
+          <div class="field"><label>Kitne Mahine Bhar Chuke</label><input type="number" inputmode="numeric" id="emi-paid" placeholder="0"></div>
+        </div>
+        <div class="form-error" id="emi-error"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="emi-save-btn">Save Karein</button>
+          <button class="btn btn-ghost" id="emi-cancel-btn">Cancel</button>
+        </div>
+      </div>
+
+      <div id="emi-list"></div>
+    </section>
+
+    <!-- KHARCHA -->
+    <section class="view" id="view-kharcha">
+      <div class="hero">
+        <div class="label">Aaj Ka Kharcha</div>
+        <div class="value" id="kharcha-hero-today">₹0</div>
+        <div class="hero-row">
+          <div class="mini">Is Hafte<b id="kharcha-hero-week">₹0</b></div>
+          <div class="mini">Is Mahine<b id="kharcha-hero-month">₹0</b></div>
+        </div>
+      </div>
+
+      <button class="add-btn" id="kharcha-add-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Kharcha Add Karo
+      </button>
+
+      <div class="form-card" id="kharcha-form">
+        <div class="field-row">
+          <div class="field"><label>Amount (₹)</label><input type="number" inputmode="decimal" id="kh-amount" placeholder="0"></div>
+          <div class="field"><label>Date</label><input type="date" id="kh-date"></div>
+        </div>
+        <div class="field"><label>Category</label>
+          <select id="kh-category">
+            <option>Khana-Peena</option><option>Transport</option><option>Shopping</option>
+            <option>Bill / Rent</option><option>Entertainment</option><option>Health</option>
+            <option>Ghar Kharcha</option><option>Other</option>
+          </select>
+        </div>
+        <div class="field"><label>Note (optional)</label><input type="text" id="kh-note" placeholder="Jaise: Auto fare"></div>
+        <div class="form-error" id="kh-error"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="kh-save-btn">Save Karein</button>
+          <button class="btn btn-ghost" id="kh-cancel-btn">Cancel</button>
+        </div>
+      </div>
+
+      <div id="kharcha-list"></div>
+    </section>
+
+    <!-- BANKS -->
+    <section class="view" id="view-banks">
+      <div class="hero">
+        <div class="label">Sabhi Bank Ka Total</div>
+        <div class="value gold" id="bank-hero-total">₹0</div>
+      </div>
+
+      <button class="add-btn" id="bank-add-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Naya Bank Add Karo
+      </button>
+
+      <div class="form-card" id="bank-form">
+        <div class="field"><label>Bank Ka Naam</label><input type="text" id="bank-name" placeholder="Jaise: SBI Savings"></div>
+        <div class="field"><label>Abhi Ka Balance (₹)</label><input type="number" inputmode="decimal" id="bank-balance" placeholder="0"></div>
+        <div class="form-error" id="bank-error"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="bank-save-btn">Save Karein</button>
+          <button class="btn btn-ghost" id="bank-cancel-btn">Cancel</button>
+        </div>
+      </div>
+
+      <div id="bank-list"></div>
+    </section>
+
+    <!-- SIP -->
+    <section class="view" id="view-sip">
+      <div class="hero">
+        <div class="label">Har Mahine SIP</div>
+        <div class="value gold" id="sip-hero-monthly">₹0</div>
+        <div class="hero-row">
+          <div class="mini">Ab Tak Jama<b id="sip-hero-invested">₹0</b></div>
+        </div>
+      </div>
+
+      <button class="add-btn" id="sip-add-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Naya SIP Add Karo
+      </button>
+
+      <div class="form-card" id="sip-form">
+        <div class="field"><label>Fund / SIP Ka Naam</label><input type="text" id="sip-name" placeholder="Jaise: Axis Bluechip"></div>
+        <div class="field-row">
+          <div class="field"><label>Monthly Amount (₹)</label><input type="number" inputmode="decimal" id="sip-amount" placeholder="0"></div>
+          <div class="field"><label>Kitne Mahine Ho Gaye</label><input type="number" inputmode="numeric" id="sip-months" placeholder="0"></div>
+        </div>
+        <div class="field"><label>Bank (Banks tab jaisa hi naam likhein, tabhi auto katega)</label><input type="text" id="sip-bank" list="bank-names-list" placeholder="Kis bank se katta hai"></div>
+        <div class="field"><label>Abhi Ki Value (optional)</label><input type="number" inputmode="decimal" id="sip-current" placeholder="Agar pata ho to"></div>
+        <div class="form-error" id="sip-error"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="sip-save-btn">Save Karein</button>
+          <button class="btn btn-ghost" id="sip-cancel-btn">Cancel</button>
+        </div>
+      </div>
+
+      <div id="sip-list"></div>
+    </section>
+
+    <!-- UDHAR -->
+    <section class="view" id="view-udhar">
+      <div class="hero">
+        <div class="label">Total Udhar Baccha Hua</div>
+        <div class="value bad" id="udhar-hero-remaining">₹0</div>
+      </div>
+
+      <button class="add-btn" id="udhar-add-btn">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        Naya Udhar Add Karo
+      </button>
+
+      <div class="form-card" id="udhar-form">
+        <div class="field"><label>Kis Se Liya (Naam)</label><input type="text" id="udhar-name" placeholder="Naam likhein"></div>
+        <div class="field-row">
+          <div class="field"><label>Kitna Liya (₹)</label><input type="number" inputmode="decimal" id="udhar-taken" placeholder="0"></div>
+          <div class="field"><label>Kitna Wapas Diya (₹)</label><input type="number" inputmode="decimal" id="udhar-repaid" placeholder="0"></div>
+        </div>
+        <div class="form-error" id="udhar-error"></div>
+        <div class="form-actions">
+          <button class="btn btn-primary" id="udhar-save-btn">Save Karein</button>
+          <button class="btn btn-ghost" id="udhar-cancel-btn">Cancel</button>
+        </div>
+      </div>
+
+      <div id="udhar-list"></div>
+    </section>
+
+  </main>
+
+  <datalist id="bank-names-list"></datalist>
+
+  <nav class="bottomnav" id="bottomnav">
+    <button data-view="dashboard" class="active">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 11L12 4l8 7"/><path d="M6 10v9h12v-9"/><path d="M10 19v-5h4v5"/></svg>
+      <span>Home</span>
+    </button>
+    <button data-view="emi">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 9h16"/><circle cx="9.3" cy="14.5" r="1.1"/><circle cx="14.7" cy="17.5" r="1.1"/><path d="M9 18l6-6"/></svg>
+      <span>EMI</span>
+    </button>
+    <button data-view="kharcha">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="7" width="18" height="12" rx="2"/><path d="M3 10.5h18"/><circle cx="16.3" cy="14.5" r="1.2"/></svg>
+      <span>Kharcha</span>
+    </button>
+    <button data-view="banks">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M3 10l9-6 9 6"/><rect x="4" y="10" width="16" height="9" rx="1"/><path d="M4 19h16"/><path d="M8 10v9M12 10v9M16 10v9"/></svg>
+      <span>Banks</span>
+    </button>
+    <button data-view="sip">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M4 17l5-5 4 4 7-8"/><path d="M15 8h5v5"/></svg>
+      <span>SIP</span>
+    </button>
+    <button data-view="udhar">
+      <svg viewBox="0 0 24 24" fill="none" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="9" r="3"/><circle cx="16.5" cy="10.5" r="2.6"/><path d="M3.5 20c0-3.2 2.5-5.3 5.5-5.3s5.5 2 5.5 4.6"/><path d="M13.3 19.3c.3-2 2-3.4 3.9-3.4 1.9 0 3.3 1.3 3.3 3.4"/></svg>
+      <span>Udhar</span>
+    </button>
+  </nav>
+
+</div>
+
+<script>
+(function(){
+  "use strict";
+
+  const KEYS = { emis:'mh-emis', expenses:'mh-expenses', banks:'mh-banks', sips:'mh-sips', loans:'mh-loans' };
+  const PIN_KEY = 'mh-pin';
+
+  // ---------- Google Drive sync ----------
+  const GOOGLE_CLIENT_ID = '796461446347-brvjlm82gpqaa1q3nr8aigj32pgjiumn.apps.googleusercontent.com';
+  const DRIVE_SCOPE = 'https://www.googleapis.com/auth/drive.file';
+  const DRIVE_FILE_NAME = 'mera-hisab-backup.json';
+  let driveToken = null;
+  let driveFileId = localStorage.getItem('mh-drive-file-id') || null;
+  let tokenClient = null;
+  let driveSyncTimer = null;
+
+  function waitForGoogleAndInit(retries){
+    if(window.google && window.google.accounts && window.google.accounts.oauth2){
+      tokenClient = google.accounts.oauth2.initTokenClient({
+        client_id: GOOGLE_CLIENT_ID,
+        scope: DRIVE_SCOPE,
+        callback: async (resp) => {
+          if(resp.error){ alert('Google sign-in me dikkat aayi: ' + resp.error); return; }
+          driveToken = resp.access_token;
+          updateDriveUI(true);
+          await driveInitialSync();
+        }
+      });
+    } else if(retries > 0){
+      setTimeout(() => waitForGoogleAndInit(retries - 1), 300);
+    }
+  }
+
+  function connectGoogle(){
+    if(!tokenClient){ alert('Google service abhi load ho raha hai, 2 second baad dubara try karo.'); return; }
+    tokenClient.requestAccessToken();
+  }
+
+  async function driveFindFile(){
+    const res = await fetch("https://www.googleapis.com/drive/v3/files?q=name%3D%27" + DRIVE_FILE_NAME + "%27%20and%20trashed%3Dfalse&spaces=drive&fields=files(id,name)", {
+      headers: { Authorization: 'Bearer ' + driveToken }
+    });
+    const data = await res.json();
+    return (data.files && data.files[0]) ? data.files[0].id : null;
+  }
+
+  function buildBackupPayload(){
+    return JSON.stringify({
+      app: 'mera-hisab', version: 1, exportedAt: new Date().toISOString(),
+      emis: state.emis, expenses: state.expenses, banks: state.banks, sips: state.sips, loans: state.loans
+    });
+  }
+
+  async function driveUpload(){
+    if(!driveToken) return;
+    const content = buildBackupPayload();
+    if(!driveFileId) driveFileId = await driveFindFile();
+    if(driveFileId){
+      localStorage.setItem('mh-drive-file-id', driveFileId);
+      await fetch("https://www.googleapis.com/upload/drive/v3/files/" + driveFileId + "?uploadType=media", {
+        method: 'PATCH',
+        headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'application/json' },
+        body: content
+      });
+    } else {
+      const metadata = { name: DRIVE_FILE_NAME, mimeType: 'application/json' };
+      const boundary = 'mhboundary123';
+      const body =
+        '--' + boundary + '\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n' + JSON.stringify(metadata) + '\r\n' +
+        '--' + boundary + '\r\nContent-Type: application/json\r\n\r\n' + content + '\r\n--' + boundary + '--';
+      const res = await fetch('https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart', {
+        method: 'POST',
+        headers: { Authorization: 'Bearer ' + driveToken, 'Content-Type': 'multipart/related; boundary=' + boundary },
+        body: body
+      });
+      const data = await res.json();
+      driveFileId = data.id;
+      localStorage.setItem('mh-drive-file-id', driveFileId);
+    }
+    localStorage.setItem('mh-last-drive-sync', todayISO());
+    updateDriveUI(true);
+  }
+
+  async function driveDownloadAndApply(askConfirm){
+    if(!driveToken) return;
+    const id = driveFileId || await driveFindFile();
+    if(!id){ alert('Drive par abhi tak koi backup nahi mila.'); return; }
+    driveFileId = id;
+    localStorage.setItem('mh-drive-file-id', id);
+    const res = await fetch('https://www.googleapis.com/drive/v3/files/' + id + '?alt=media', {
+      headers: { Authorization: 'Bearer ' + driveToken }
+    });
+    const data = await res.json();
+    if(askConfirm && !confirm('Drive ka data load karega, abhi ka is-phone-ka data replace ho jayega. Aage badhein?')) return;
+    state.emis = Array.isArray(data.emis) ? data.emis : [];
+    state.expenses = Array.isArray(data.expenses) ? data.expenses : [];
+    state.banks = Array.isArray(data.banks) ? data.banks : [];
+    state.sips = Array.isArray(data.sips) ? data.sips : [];
+    state.loans = Array.isArray(data.loans) ? data.loans : [];
+    await Promise.all([
+      saveKeyLocalOnly(KEYS.emis, state.emis), saveKeyLocalOnly(KEYS.expenses, state.expenses),
+      saveKeyLocalOnly(KEYS.banks, state.banks), saveKeyLocalOnly(KEYS.sips, state.sips), saveKeyLocalOnly(KEYS.loans, state.loans)
+    ]);
+    renderAll();
+    alert('Drive se data wapas aa gaya!');
+  }
+
+  async function driveInitialSync(){
+    const id = await driveFindFile();
+    if(id){
+      driveFileId = id;
+      localStorage.setItem('mh-drive-file-id', id);
+      if(confirm('Google Drive par pehle se ek backup mila hai. Usse load karna hai?\n\nOK = Drive wala data load karo\nCancel = Is phone ka data Drive par save karo')){
+        await driveDownloadAndApply(false);
+      } else {
+        await driveUpload();
+      }
+    } else {
+      await driveUpload();
+    }
+  }
+
+  function scheduleDriveSync(){
+    if(!driveToken) return;
+    clearTimeout(driveSyncTimer);
+    driveSyncTimer = setTimeout(() => { driveUpload().catch(() => {}); }, 1500);
+  }
+
+  function updateDriveUI(connected){
+    const connectBtn = document.getElementById('drive-connect-btn');
+    const actions = document.getElementById('drive-actions');
+    const note = document.getElementById('drive-status-note');
+    if(!connectBtn) return;
+    connectBtn.style.display = connected ? 'none' : 'flex';
+    actions.style.display = connected ? 'flex' : 'none';
+    const last = localStorage.getItem('mh-last-drive-sync');
+    note.textContent = connected
+      ? ('Is baithak (session) me Drive se juda hua hai.' + (last ? ' Aakhri sync: ' + prettyDate(last) : ''))
+      : 'Google Drive se judne ke liye button dabao (har baar app kholne par ek baar dabana padega).';
+  }
+
+  function initLock(){
+    const savedPin = localStorage.getItem(PIN_KEY);
+    const msg = document.getElementById('lock-message');
+    const pin1 = document.getElementById('lock-pin1');
+    const pin2 = document.getElementById('lock-pin2');
+    const err = document.getElementById('lock-error');
+    const forgotBtn = document.getElementById('forgot-pin-btn');
+
+    if(!savedPin){
+      msg.textContent = 'Apni privacy ke liye 4-digit PIN banao';
+      pin2.style.display = 'block';
+      forgotBtn.style.display = 'none';
+    } else {
+      msg.textContent = 'PIN daalke app kholo';
+      pin2.style.display = 'none';
+      forgotBtn.style.display = 'block';
+    }
+
+    document.getElementById('lock-submit').onclick = function(){
+      err.textContent = '';
+      const currentPin = localStorage.getItem(PIN_KEY);
+      if(!currentPin){
+        const p1 = pin1.value.trim(), p2 = pin2.value.trim();
+        if(!/^\d{4}$/.test(p1)){ err.textContent = '4 digit ka PIN daalein.'; return; }
+        if(p1 !== p2){ err.textContent = 'Dono PIN match nahi ho rahe.'; return; }
+        localStorage.setItem(PIN_KEY, p1);
+        unlockApp();
+      } else {
+        if(pin1.value.trim() === currentPin){
+          unlockApp();
+        } else {
+          err.textContent = 'Galat PIN.';
+          pin1.value = '';
+        }
+      }
+    };
+
+    forgotBtn.onclick = function(){
+      if(confirm('PIN bhool gaye to sara app-data delete karna padega (agar backup file hai to baad me restore kar sakte ho). Aage badhein?')){
+        localStorage.clear();
+        location.reload();
+      }
+    };
+  }
+
+  function unlockApp(){
+    document.getElementById('lock-screen').style.display = 'none';
+    init();
+  }
+
+  let state = { emis:[], expenses:[], banks:[], sips:[], loans:[] };
+  let ui = {
+    tab:'dashboard',
+    editing:{ emi:null, kh:null, bank:null, sip:null, udhar:null },
+    expanded:{ emi:null, bank:null, sip:null, udhar:null }
+  };
+
+  // ---------- storage helpers ----------
+  async function loadKey(key){
+    try{
+      const raw = localStorage.getItem(key);
+      return raw ? JSON.parse(raw) : [];
+    }catch(e){ return []; }
+  }
+  async function saveKeyLocalOnly(key, arr){
+    try{ localStorage.setItem(key, JSON.stringify(arr)); }
+    catch(e){ console.error('Save failed for', key, e); }
+  }
+  async function saveKey(key, arr){
+    await saveKeyLocalOnly(key, arr);
+    scheduleDriveSync();
+  }
+
+  function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+
+  function formatINR(n){
+    n = Math.round(Number(n)||0);
+    const neg = n<0; n = Math.abs(n);
+    let s = n.toString();
+    let last3 = s.slice(-3);
+    let other = s.slice(0,-3);
+    if(other!=='') last3 = ','+last3;
+    let formatted = other.replace(/\B(?=(\d{2})+(?!\d))/g, ',') + last3;
+    return (neg?'-':'')+'₹'+formatted;
+  }
+
+  function todayISO(){
+    const d = new Date();
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+  function prettyDate(iso){
+    const d = new Date(iso+'T00:00:00');
+    if(isNaN(d)) return iso;
+    return d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'});
+  }
+  function daysAgo(n){
+    const d = new Date(); d.setDate(d.getDate()-n);
+    return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  }
+
+  // ---------- tabs ----------
+  document.getElementById('bottomnav').addEventListener('click', function(e){
+    const btn = e.target.closest('button[data-view]');
+    if(!btn) return;
+    ui.tab = btn.dataset.view;
+    document.querySelectorAll('#bottomnav button').forEach(b=>b.classList.toggle('active', b===btn));
+    document.querySelectorAll('section.view').forEach(s=>s.classList.toggle('active', s.id==='view-'+ui.tab));
+  });
+
+  function setToday(){
+    document.getElementById('topbar-date').textContent = prettyDate(todayISO());
+  }
+
+  function updateBankDatalist(){
+    const dl = document.getElementById('bank-names-list');
+    dl.innerHTML = state.banks.map(b=>'<option value="'+escapeHtml(b.name)+'">').join('');
+  }
+
+  function escapeHtml(str){
+    return String(str).replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  }
+
+  // ---------- generic form open/close ----------
+  function openForm(id){ document.getElementById(id).classList.add('open'); }
+  function closeForm(id){ document.getElementById(id).classList.remove('open'); }
+
+  // ================= EMI =================
+  // ---------- Excel export ----------
+  function exportToExcel(){
+    if(typeof XLSX === 'undefined'){ alert('Excel library load nahi ho payi, thodi der baad dubara try karo.'); return; }
+
+    const wb = XLSX.utils.book_new();
+
+    // 1) Kharcha - saari entries, date-wise
+    const expRows = state.expenses.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(x=>({
+      Date: x.date, Category: x.category, 'Amount (₹)': x.amount, Note: x.note || ''
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(expRows.length?expRows:[{Date:'',Category:'',['Amount (₹)']:'',Note:''}]), 'Kharcha');
+
+    // 2) Kharcha - category-wise, mahine ke hisaab se (pivot)
+    const monthsSet = new Set();
+    const catMonthMap = {};
+    state.expenses.forEach(x=>{
+      const month = x.date.slice(0,7);
+      monthsSet.add(month);
+      catMonthMap[x.category] = catMonthMap[x.category] || {};
+      catMonthMap[x.category][month] = (catMonthMap[x.category][month] || 0) + x.amount;
+    });
+    const months = Array.from(monthsSet).sort();
+    const pivotRows = Object.keys(catMonthMap).sort().map(cat=>{
+      const row = { Category: cat };
+      let total = 0;
+      months.forEach(m=>{ const v = catMonthMap[cat][m] || 0; row[m] = v; total += v; });
+      row['Total'] = total;
+      return row;
+    });
+    if(pivotRows.length){
+      const totalRow = { Category: 'Grand Total' };
+      let grand = 0;
+      months.forEach(m=>{
+        let sum = 0; pivotRows.forEach(r=> sum += (r[m]||0));
+        totalRow[m] = sum; grand += sum;
+      });
+      totalRow['Total'] = grand;
+      pivotRows.push(totalRow);
+    }
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(pivotRows.length?pivotRows:[{Category:'Koi kharcha nahi mila'}]), 'Kharcha Category-Mahina');
+
+    // 3) EMI
+    const emiRows = state.emis.map(e=>{
+      const c = emiComputed(e);
+      return {
+        Naam: e.name, Category: e.category, Bank: e.bank || '',
+        'Total Amount': e.totalAmount, 'EMI Per Month': e.emiAmount,
+        'Total Months': e.totalMonths, 'Paid Months': e.paidMonths,
+        'Paid Amount': c.paidAmount, Remaining: c.remaining, Status: c.isDone ? 'Poora' : 'Chalu'
+      };
+    });
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(emiRows.length?emiRows:[{Naam:'Koi EMI nahi mila'}]), 'EMI');
+
+    // 4) Banks
+    const bankRows = state.banks.map(b=>({ Bank: b.name, 'Balance (₹)': b.balance }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(bankRows.length?bankRows:[{Bank:'Koi bank nahi mila'}]), 'Banks');
+
+    // 5) SIP
+    const sipRows = state.sips.map(s=>({
+      Naam: s.name, Bank: s.bank || '', 'Monthly Amount': s.amount, Months: s.months,
+      'Jama (Invested)': s.amount * s.months, 'Current Value': s.current != null ? s.current : ''
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(sipRows.length?sipRows:[{Naam:'Koi SIP nahi mila'}]), 'SIP');
+
+    // 6) Udhar
+    const udharRows = state.loans.map(l=>({
+      Naam: l.name, Liya: l.taken, Diya: l.repaid, Baccha: Math.max(l.taken - l.repaid, 0)
+    }));
+    XLSX.utils.book_append_sheet(wb, XLSX.utils.json_to_sheet(udharRows.length?udharRows:[{Naam:'Koi udhar nahi mila'}]), 'Udhar');
+
+    XLSX.writeFile(wb, 'mera-hisab-report-' + todayISO() + '.xlsx');
+  }
+
+
+  function emiComputed(e){
+    const paidAmount = e.paidMonths * e.emiAmount;
+    const remaining = Math.max(e.totalAmount - paidAmount, 0);
+    const pct = e.totalAmount>0 ? Math.min(100, Math.round((paidAmount/e.totalAmount)*100)) : 0;
+    const isDone = e.paidMonths >= e.totalMonths || remaining<=0;
+    return {paidAmount, remaining, pct, isDone};
+  }
+
+  document.getElementById('emi-add-btn').addEventListener('click', function(){
+    ui.editing.emi = null;
+    document.getElementById('emi-name').value='';
+    document.getElementById('emi-category').value='Home Loan';
+    document.getElementById('emi-bank').value='';
+    document.getElementById('emi-total').value='';
+    document.getElementById('emi-amount').value='';
+    document.getElementById('emi-months').value='';
+    document.getElementById('emi-paid').value='0';
+    document.getElementById('emi-error').textContent='';
+    openForm('emi-form');
+  });
+  document.getElementById('emi-cancel-btn').addEventListener('click', ()=>closeForm('emi-form'));
+
+  document.getElementById('emi-save-btn').addEventListener('click', async function(){
+    const name = document.getElementById('emi-name').value.trim();
+    const category = document.getElementById('emi-category').value;
+    const bank = document.getElementById('emi-bank').value.trim();
+    const total = parseFloat(document.getElementById('emi-total').value);
+    const amount = parseFloat(document.getElementById('emi-amount').value);
+    const months = parseInt(document.getElementById('emi-months').value);
+    const paid = parseInt(document.getElementById('emi-paid').value) || 0;
+    if(!name || !total || total<=0 || !amount || amount<=0 || !months || months<=0){
+      document.getElementById('emi-error').textContent = 'Naam, total amount, EMI amount aur months sahi bharein.';
+      return;
+    }
+    if(ui.editing.emi){
+      const item = state.emis.find(x=>x.id===ui.editing.emi);
+      Object.assign(item, {name, category, bank, totalAmount:total, emiAmount:amount, totalMonths:months, paidMonths:paid});
+    } else {
+      state.emis.push({id:uid(), name, category, bank, totalAmount:total, emiAmount:amount, totalMonths:months, paidMonths:paid});
+    }
+    await saveKey(KEYS.emis, state.emis);
+    closeForm('emi-form');
+    renderAll();
+  });
+
+  function renderEMI(){
+    const active = state.emis.filter(e=>!emiComputed(e).isDone);
+    const done = state.emis.filter(e=>emiComputed(e).isDone);
+    const totalRemaining = active.reduce((s,e)=>s+emiComputed(e).remaining,0);
+    const totalMonthly = active.reduce((s,e)=>s+e.emiAmount,0);
+    document.getElementById('emi-hero-remaining').textContent = formatINR(totalRemaining);
+    document.getElementById('emi-hero-monthly').textContent = formatINR(totalMonthly);
+    document.getElementById('emi-hero-count').textContent = active.length;
+
+    const list = document.getElementById('emi-list');
+    if(state.emis.length===0){
+      list.innerHTML = '<div class="empty">Abhi koi EMI add nahi kiya hai.</div>';
+      return;
+    }
+    const ordered = active.concat(done);
+    list.innerHTML = ordered.map(e=>{
+      const c = emiComputed(e);
+      const expanded = ui.expanded.emi===e.id;
+      return `<div class="ledger-row" data-id="${e.id}" data-action="toggle-emi">
+        <div class="top">
+          <div><span class="name">${escapeHtml(e.name)}</span><span class="tag">${escapeHtml(e.category)}</span></div>
+          <div class="right ${c.isDone?'good':'bad'}">${c.isDone?'Poora ✓':formatINR(c.remaining)}</div>
+        </div>
+        <div class="meta">${escapeHtml(e.bank||'Bank nahi likha')} • ${e.paidMonths}/${e.totalMonths} mahine • ${formatINR(e.emiAmount)}/mahina</div>
+        <div class="progress"><div style="width:${c.pct}%"></div></div>
+        <div class="row-actions ${expanded?'open':''}">
+          ${c.isDone?'':'<button class="btn btn-primary" data-action="emi-pay-month" data-id="'+e.id+'">1 EMI Bhara ✓</button>'}
+          <button class="btn btn-ghost" data-action="emi-edit" data-id="${e.id}">Edit</button>
+          <button class="btn btn-danger" data-action="emi-delete" data-id="${e.id}">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('emi-list').addEventListener('click', async function(e){
+    const row = e.target.closest('[data-action]');
+    if(!row) return;
+    const action = row.dataset.action;
+    const id = row.dataset.id;
+    if(action==='toggle-emi'){
+      ui.expanded.emi = ui.expanded.emi===id ? null : id;
+      renderEMI();
+    } else if(action==='emi-pay-month'){
+      const item = state.emis.find(x=>x.id===id);
+      item.paidMonths = (item.paidMonths||0)+1;
+      const bank = state.banks.find(b=>b.name.trim().toLowerCase()===(item.bank||'').trim().toLowerCase());
+      if(bank) bank.balance -= item.emiAmount;
+      await saveKey(KEYS.emis, state.emis);
+      if(bank) await saveKey(KEYS.banks, state.banks);
+      renderAll();
+    } else if(action==='emi-edit'){
+      const item = state.emis.find(x=>x.id===id);
+      ui.editing.emi = id;
+      document.getElementById('emi-name').value=item.name;
+      document.getElementById('emi-category').value=item.category;
+      document.getElementById('emi-bank').value=item.bank;
+      document.getElementById('emi-total').value=item.totalAmount;
+      document.getElementById('emi-amount').value=item.emiAmount;
+      document.getElementById('emi-months').value=item.totalMonths;
+      document.getElementById('emi-paid').value=item.paidMonths;
+      document.getElementById('emi-error').textContent='';
+      openForm('emi-form');
+    } else if(action==='emi-delete'){
+      state.emis = state.emis.filter(x=>x.id!==id);
+      await saveKey(KEYS.emis, state.emis);
+      renderAll();
+    }
+  });
+
+  // ================= KHARCHA (daily expenses) =================
+  document.getElementById('kharcha-add-btn').addEventListener('click', function(){
+    ui.editing.kh = null;
+    document.getElementById('kh-amount').value='';
+    document.getElementById('kh-date').value=todayISO();
+    document.getElementById('kh-category').value='Khana-Peena';
+    document.getElementById('kh-note').value='';
+    document.getElementById('kh-error').textContent='';
+    openForm('kharcha-form');
+  });
+  document.getElementById('kh-cancel-btn').addEventListener('click', ()=>closeForm('kharcha-form'));
+
+  document.getElementById('kh-save-btn').addEventListener('click', async function(){
+    const amount = parseFloat(document.getElementById('kh-amount').value);
+    const date = document.getElementById('kh-date').value || todayISO();
+    const category = document.getElementById('kh-category').value;
+    const note = document.getElementById('kh-note').value.trim();
+    if(!amount || amount<=0){
+      document.getElementById('kh-error').textContent = 'Sahi amount bharein.';
+      return;
+    }
+    if(ui.editing.kh){
+      const item = state.expenses.find(x=>x.id===ui.editing.kh);
+      Object.assign(item, {amount, date, category, note});
+    } else {
+      state.expenses.push({id:uid(), amount, date, category, note});
+    }
+    await saveKey(KEYS.expenses, state.expenses);
+    closeForm('kharcha-form');
+    renderAll();
+  });
+
+  function renderKharcha(){
+    const today = todayISO();
+    const weekStart = daysAgo(6);
+    const monthPrefix = today.slice(0,7);
+    const todayTotal = state.expenses.filter(x=>x.date===today).reduce((s,x)=>s+x.amount,0);
+    const weekTotal = state.expenses.filter(x=>x.date>=weekStart).reduce((s,x)=>s+x.amount,0);
+    const monthTotal = state.expenses.filter(x=>x.date.startsWith(monthPrefix)).reduce((s,x)=>s+x.amount,0);
+    document.getElementById('kharcha-hero-today').textContent = formatINR(todayTotal);
+    document.getElementById('kharcha-hero-week').textContent = formatINR(weekTotal);
+    document.getElementById('kharcha-hero-month').textContent = formatINR(monthTotal);
+
+    const list = document.getElementById('kharcha-list');
+    if(state.expenses.length===0){
+      list.innerHTML = '<div class="empty">Abhi koi kharcha add nahi kiya hai.</div>';
+      return;
+    }
+    const sorted = [...state.expenses].sort((a,b)=> b.date.localeCompare(a.date) || b.id.localeCompare(a.id));
+    let html = '';
+    let lastDate = null;
+    sorted.forEach(x=>{
+      if(x.date!==lastDate){
+        const dayTotal = state.expenses.filter(e=>e.date===x.date).reduce((s,e)=>s+e.amount,0);
+        html += `<div class="date-group">${prettyDate(x.date)} · ${formatINR(dayTotal)}</div>`;
+        lastDate = x.date;
+      }
+      html += `<div class="ledger-row" data-id="${x.id}">
+        <div class="top">
+          <div><span class="name">${escapeHtml(x.category)}</span></div>
+          <div class="right bad">${formatINR(x.amount)}</div>
+        </div>
+        ${x.note?`<div class="meta">${escapeHtml(x.note)}</div>`:''}
+        <div class="row-actions ${ui.expanded.kh===x.id?'open':''}">
+          <button class="btn btn-ghost" data-action="kh-edit" data-id="${x.id}">Edit</button>
+          <button class="btn btn-danger" data-action="kh-delete" data-id="${x.id}">Delete</button>
+        </div>
+      </div>`;
+    });
+    list.innerHTML = html;
+
+    list.querySelectorAll('.ledger-row').forEach(row=>{
+      row.addEventListener('click', function(e){
+        if(e.target.closest('[data-action]')) return;
+        ui.expanded.kh = ui.expanded.kh===row.dataset.id ? null : row.dataset.id;
+        renderKharcha();
+      });
+    });
+  }
+
+  document.getElementById('kharcha-list').addEventListener('click', async function(e){
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const id = btn.dataset.id;
+    if(btn.dataset.action==='kh-edit'){
+      const item = state.expenses.find(x=>x.id===id);
+      ui.editing.kh = id;
+      document.getElementById('kh-amount').value=item.amount;
+      document.getElementById('kh-date').value=item.date;
+      document.getElementById('kh-category').value=item.category;
+      document.getElementById('kh-note').value=item.note||'';
+      document.getElementById('kh-error').textContent='';
+      openForm('kharcha-form');
+    } else if(btn.dataset.action==='kh-delete'){
+      state.expenses = state.expenses.filter(x=>x.id!==id);
+      await saveKey(KEYS.expenses, state.expenses);
+      renderAll();
+    }
+  });
+
+  // ================= BANKS =================
+  document.getElementById('bank-add-btn').addEventListener('click', function(){
+    ui.editing.bank = null;
+    document.getElementById('bank-name').value='';
+    document.getElementById('bank-balance').value='';
+    document.getElementById('bank-error').textContent='';
+    openForm('bank-form');
+  });
+  document.getElementById('bank-cancel-btn').addEventListener('click', ()=>closeForm('bank-form'));
+
+  document.getElementById('bank-save-btn').addEventListener('click', async function(){
+    const name = document.getElementById('bank-name').value.trim();
+    const balance = parseFloat(document.getElementById('bank-balance').value);
+    if(!name || isNaN(balance)){
+      document.getElementById('bank-error').textContent = 'Bank ka naam aur balance bharein.';
+      return;
+    }
+    if(ui.editing.bank){
+      const item = state.banks.find(x=>x.id===ui.editing.bank);
+      Object.assign(item, {name, balance});
+    } else {
+      state.banks.push({id:uid(), name, balance});
+    }
+    await saveKey(KEYS.banks, state.banks);
+    closeForm('bank-form');
+    renderAll();
+  });
+
+  function renderBanks(){
+    const total = state.banks.reduce((s,b)=>s+b.balance,0);
+    document.getElementById('bank-hero-total').textContent = formatINR(total);
+    const list = document.getElementById('bank-list');
+    if(state.banks.length===0){
+      list.innerHTML = '<div class="empty">Abhi koi bank add nahi kiya hai.</div>';
+      return;
+    }
+    list.innerHTML = state.banks.map(b=>{
+      const expanded = ui.expanded.bank===b.id;
+      return `<div class="ledger-row" data-id="${b.id}" data-action="toggle-bank">
+        <div class="top">
+          <div class="name">${escapeHtml(b.name)}</div>
+          <div class="right good">${formatINR(b.balance)}</div>
+        </div>
+        <div class="row-actions ${expanded?'open':''}">
+          <button class="btn btn-ghost" data-action="bank-deposit-open" data-id="${b.id}">Paisa Jama</button>
+          <button class="btn btn-ghost" data-action="bank-withdraw-open" data-id="${b.id}">Paisa Nikalo</button>
+          <button class="btn btn-ghost" data-action="bank-edit" data-id="${b.id}">Edit</button>
+          <button class="btn btn-danger" data-action="bank-delete" data-id="${b.id}">Delete</button>
+        </div>
+        <div class="quick-amt" id="bank-quick-${b.id}">
+          <input type="number" inputmode="decimal" placeholder="Amount" id="bank-quick-input-${b.id}">
+          <button class="btn btn-primary" data-action="bank-quick-confirm" data-id="${b.id}">OK</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  let bankQuickMode = {};
+  document.getElementById('bank-list').addEventListener('click', async function(e){
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if(action==='toggle-bank'){
+      ui.expanded.bank = ui.expanded.bank===id ? null : id;
+      renderBanks();
+    } else if(action==='bank-edit'){
+      const item = state.banks.find(x=>x.id===id);
+      ui.editing.bank = id;
+      document.getElementById('bank-name').value=item.name;
+      document.getElementById('bank-balance').value=item.balance;
+      document.getElementById('bank-error').textContent='';
+      openForm('bank-form');
+    } else if(action==='bank-delete'){
+      state.banks = state.banks.filter(x=>x.id!==id);
+      await saveKey(KEYS.banks, state.banks);
+      renderAll();
+    } else if(action==='bank-deposit-open'){
+      bankQuickMode[id]='deposit';
+      document.getElementById('bank-quick-'+id).classList.add('open');
+    } else if(action==='bank-withdraw-open'){
+      bankQuickMode[id]='withdraw';
+      document.getElementById('bank-quick-'+id).classList.add('open');
+    } else if(action==='bank-quick-confirm'){
+      const amt = parseFloat(document.getElementById('bank-quick-input-'+id).value);
+      if(!amt || amt<=0) return;
+      const item = state.banks.find(x=>x.id===id);
+      if(bankQuickMode[id]==='withdraw') item.balance -= amt; else item.balance += amt;
+      await saveKey(KEYS.banks, state.banks);
+      renderAll();
+    }
+  });
+
+  // ================= SIP =================
+  document.getElementById('sip-add-btn').addEventListener('click', function(){
+    ui.editing.sip = null;
+    document.getElementById('sip-name').value='';
+    document.getElementById('sip-amount').value='';
+    document.getElementById('sip-months').value='0';
+    document.getElementById('sip-bank').value='';
+    document.getElementById('sip-current').value='';
+    document.getElementById('sip-error').textContent='';
+    openForm('sip-form');
+  });
+  document.getElementById('sip-cancel-btn').addEventListener('click', ()=>closeForm('sip-form'));
+
+  document.getElementById('sip-save-btn').addEventListener('click', async function(){
+    const name = document.getElementById('sip-name').value.trim();
+    const amount = parseFloat(document.getElementById('sip-amount').value);
+    const months = parseInt(document.getElementById('sip-months').value) || 0;
+    const bank = document.getElementById('sip-bank').value.trim();
+    const currentRaw = document.getElementById('sip-current').value;
+    const current = currentRaw==='' ? null : parseFloat(currentRaw);
+    if(!name || !amount || amount<=0){
+      document.getElementById('sip-error').textContent = 'Naam aur monthly amount bharein.';
+      return;
+    }
+    if(ui.editing.sip){
+      const item = state.sips.find(x=>x.id===ui.editing.sip);
+      Object.assign(item, {name, amount, months, bank, current});
+    } else {
+      state.sips.push({id:uid(), name, amount, months, bank, current});
+    }
+    await saveKey(KEYS.sips, state.sips);
+    closeForm('sip-form');
+    renderAll();
+  });
+
+  function renderSIP(){
+    const monthly = state.sips.reduce((s,x)=>s+x.amount,0);
+    const invested = state.sips.reduce((s,x)=>s+x.amount*x.months,0);
+    document.getElementById('sip-hero-monthly').textContent = formatINR(monthly);
+    document.getElementById('sip-hero-invested').textContent = formatINR(invested);
+
+    const list = document.getElementById('sip-list');
+    if(state.sips.length===0){
+      list.innerHTML = '<div class="empty">Abhi koi SIP add nahi kiya hai.</div>';
+      return;
+    }
+    list.innerHTML = state.sips.map(s=>{
+      const inv = s.amount*s.months;
+      const gain = (s.current!=null) ? s.current - inv : null;
+      const expanded = ui.expanded.sip===s.id;
+      return `<div class="ledger-row" data-id="${s.id}" data-action="toggle-sip">
+        <div class="top">
+          <div class="name">${escapeHtml(s.name)}</div>
+          <div class="right good">${formatINR(s.amount)}/mahina</div>
+        </div>
+        <div class="meta">${s.bank?escapeHtml(s.bank)+' • ':''}${s.months} mahine • Jama: ${formatINR(inv)}${gain!=null?' • '+(gain>=0?'Fayda ':'Ghata ')+formatINR(Math.abs(gain)):''}</div>
+        <div class="row-actions ${expanded?'open':''}">
+          <button class="btn btn-primary" data-action="sip-add-month" data-id="${s.id}">+1 Mahina Hua</button>
+          <button class="btn btn-ghost" data-action="sip-edit" data-id="${s.id}">Edit</button>
+          <button class="btn btn-danger" data-action="sip-delete" data-id="${s.id}">Delete</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('sip-list').addEventListener('click', async function(e){
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if(action==='toggle-sip'){
+      ui.expanded.sip = ui.expanded.sip===id ? null : id;
+      renderSIP();
+    } else if(action==='sip-add-month'){
+      const item = state.sips.find(x=>x.id===id);
+      item.months = (item.months||0)+1;
+      const bank = state.banks.find(b=>b.name.trim().toLowerCase()===(item.bank||'').trim().toLowerCase());
+      if(bank) bank.balance -= item.amount;
+      await saveKey(KEYS.sips, state.sips);
+      if(bank) await saveKey(KEYS.banks, state.banks);
+      renderAll();
+    } else if(action==='sip-edit'){
+      const item = state.sips.find(x=>x.id===id);
+      ui.editing.sip = id;
+      document.getElementById('sip-name').value=item.name;
+      document.getElementById('sip-amount').value=item.amount;
+      document.getElementById('sip-months').value=item.months;
+      document.getElementById('sip-bank').value=item.bank||'';
+      document.getElementById('sip-current').value = item.current!=null ? item.current : '';
+      document.getElementById('sip-error').textContent='';
+      openForm('sip-form');
+    } else if(action==='sip-delete'){
+      state.sips = state.sips.filter(x=>x.id!==id);
+      await saveKey(KEYS.sips, state.sips);
+      renderAll();
+    }
+  });
+
+  // ================= UDHAR (loans owed to others) =================
+  document.getElementById('udhar-add-btn').addEventListener('click', function(){
+    ui.editing.udhar = null;
+    document.getElementById('udhar-name').value='';
+    document.getElementById('udhar-taken').value='';
+    document.getElementById('udhar-repaid').value='0';
+    document.getElementById('udhar-error').textContent='';
+    openForm('udhar-form');
+  });
+  document.getElementById('udhar-cancel-btn').addEventListener('click', ()=>closeForm('udhar-form'));
+
+  document.getElementById('udhar-save-btn').addEventListener('click', async function(){
+    const name = document.getElementById('udhar-name').value.trim();
+    const taken = parseFloat(document.getElementById('udhar-taken').value);
+    const repaid = parseFloat(document.getElementById('udhar-repaid').value) || 0;
+    if(!name || !taken || taken<=0){
+      document.getElementById('udhar-error').textContent = 'Naam aur amount sahi bharein.';
+      return;
+    }
+    if(ui.editing.udhar){
+      const item = state.loans.find(x=>x.id===ui.editing.udhar);
+      Object.assign(item, {name, taken, repaid});
+    } else {
+      state.loans.push({id:uid(), name, taken, repaid});
+    }
+    await saveKey(KEYS.loans, state.loans);
+    closeForm('udhar-form');
+    renderAll();
+  });
+
+  function renderUdhar(){
+    const totalRemaining = state.loans.reduce((s,x)=>s+Math.max(x.taken-x.repaid,0),0);
+    document.getElementById('udhar-hero-remaining').textContent = formatINR(totalRemaining);
+    const list = document.getElementById('udhar-list');
+    if(state.loans.length===0){
+      list.innerHTML = '<div class="empty">Abhi koi udhar add nahi kiya hai.</div>';
+      return;
+    }
+    list.innerHTML = state.loans.map(x=>{
+      const remaining = Math.max(x.taken-x.repaid,0);
+      const cleared = remaining<=0;
+      const expanded = ui.expanded.udhar===x.id;
+      return `<div class="ledger-row" data-id="${x.id}" data-action="toggle-udhar">
+        <div class="top">
+          <div class="name">${escapeHtml(x.name)}</div>
+          <div class="right ${cleared?'good':'bad'}">${cleared?'Chukta ✓':formatINR(remaining)}</div>
+        </div>
+        <div class="meta">Liya: ${formatINR(x.taken)} • Diya: ${formatINR(x.repaid)}</div>
+        <div class="row-actions ${expanded?'open':''}">
+          ${cleared?'':'<button class="btn btn-ghost" data-action="udhar-pay-open" data-id="'+x.id+'">Paisa Wapas Diya</button>'}
+          <button class="btn btn-ghost" data-action="udhar-edit" data-id="${x.id}">Edit</button>
+          <button class="btn btn-danger" data-action="udhar-delete" data-id="${x.id}">Delete</button>
+        </div>
+        <div class="quick-amt" id="udhar-quick-${x.id}">
+          <input type="number" inputmode="decimal" placeholder="Amount" id="udhar-quick-input-${x.id}">
+          <button class="btn btn-primary" data-action="udhar-pay-confirm" data-id="${x.id}">OK</button>
+        </div>
+      </div>`;
+    }).join('');
+  }
+
+  document.getElementById('udhar-list').addEventListener('click', async function(e){
+    const btn = e.target.closest('[data-action]');
+    if(!btn) return;
+    const action = btn.dataset.action;
+    const id = btn.dataset.id;
+    if(action==='toggle-udhar'){
+      ui.expanded.udhar = ui.expanded.udhar===id ? null : id;
+      renderUdhar();
+    } else if(action==='udhar-pay-open'){
+      document.getElementById('udhar-quick-'+id).classList.add('open');
+    } else if(action==='udhar-pay-confirm'){
+      const amt = parseFloat(document.getElementById('udhar-quick-input-'+id).value);
+      if(!amt || amt<=0) return;
+      const item = state.loans.find(x=>x.id===id);
+      item.repaid += amt;
+      await saveKey(KEYS.loans, state.loans);
+      renderAll();
+    } else if(action==='udhar-edit'){
+      const item = state.loans.find(x=>x.id===id);
+      ui.editing.udhar = id;
+      document.getElementById('udhar-name').value=item.name;
+      document.getElementById('udhar-taken').value=item.taken;
+      document.getElementById('udhar-repaid').value=item.repaid;
+      document.getElementById('udhar-error').textContent='';
+      openForm('udhar-form');
+    } else if(action==='udhar-delete'){
+      state.loans = state.loans.filter(x=>x.id!==id);
+      await saveKey(KEYS.loans, state.loans);
+      renderAll();
+    }
+  });
+
+  // ================= DASHBOARD =================
+  function renderDashboard(){
+    const today = todayISO();
+    const weekStart = daysAgo(6);
+    const monthPrefix = today.slice(0,7);
+    const totalBalance = state.banks.reduce((s,b)=>s+b.balance,0);
+    const todayExp = state.expenses.filter(x=>x.date===today).reduce((s,x)=>s+x.amount,0);
+    const weekExp = state.expenses.filter(x=>x.date>=weekStart).reduce((s,x)=>s+x.amount,0);
+    const monthExp = state.expenses.filter(x=>x.date.startsWith(monthPrefix)).reduce((s,x)=>s+x.amount,0);
+    const activeEmis = state.emis.filter(e=>!emiComputed(e).isDone);
+    const emiMonthly = activeEmis.reduce((s,e)=>s+e.emiAmount,0);
+    const emiRemaining = activeEmis.reduce((s,e)=>s+emiComputed(e).remaining,0);
+    const sipMonthly = state.sips.reduce((s,x)=>s+x.amount,0);
+    const sipInvested = state.sips.reduce((s,x)=>s+x.amount*x.months,0);
+    const udharRemaining = state.loans.reduce((s,x)=>s+Math.max(x.taken-x.repaid,0),0);
+
+    document.getElementById('dash-total-balance').textContent = formatINR(totalBalance);
+    document.getElementById('dash-today').textContent = formatINR(todayExp);
+    document.getElementById('dash-week').textContent = formatINR(weekExp);
+    document.getElementById('dash-month').textContent = formatINR(monthExp);
+    document.getElementById('dash-emi-monthly').textContent = formatINR(emiMonthly);
+    document.getElementById('dash-emi-count-sub').textContent = activeEmis.length ? ' ('+activeEmis.length+')' : '';
+    document.getElementById('dash-sip-monthly').textContent = formatINR(sipMonthly);
+    document.getElementById('dash-sip-count-sub').textContent = state.sips.length ? ' ('+state.sips.length+')' : '';
+    document.getElementById('dash-emi-remaining').textContent = formatINR(emiRemaining);
+    document.getElementById('dash-udhar-remaining').textContent = formatINR(udharRemaining);
+    document.getElementById('dash-sip-invested').textContent = formatINR(sipInvested);
+    showLastBackupNote();
+    updateDriveUI(!!driveToken);
+  }
+
+  function showLastBackupNote(){
+    const note = document.getElementById('last-backup-note');
+    const last = localStorage.getItem('mh-last-backup');
+    note.textContent = last ? ('Aakhri backup: ' + prettyDate(last)) : 'Abhi tak koi backup nahi liya gaya.';
+  }
+
+  document.getElementById('backup-btn').addEventListener('click', function(){
+    const backup = {
+      app: 'mera-hisab',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      emis: state.emis, expenses: state.expenses, banks: state.banks, sips: state.sips, loans: state.loans
+    };
+    const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'mera-hisab-backup-' + todayISO() + '.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    localStorage.setItem('mh-last-backup', todayISO());
+    showLastBackupNote();
+  });
+
+  document.getElementById('restore-btn').addEventListener('click', function(){
+    document.getElementById('restore-input').click();
+  });
+
+  document.getElementById('restore-input').addEventListener('change', function(e){
+    const file = e.target.files[0];
+    if(!file) return;
+    const reader = new FileReader();
+    reader.onload = async function(ev){
+      try{
+        const data = JSON.parse(ev.target.result);
+        if(!data || typeof data !== 'object') throw new Error('bad file');
+        if(!confirm('Ye backup wala data load karega aur abhi ka data replace ho jayega. Pakka aage badhein?')) return;
+        state.emis = Array.isArray(data.emis) ? data.emis : [];
+        state.expenses = Array.isArray(data.expenses) ? data.expenses : [];
+        state.banks = Array.isArray(data.banks) ? data.banks : [];
+        state.sips = Array.isArray(data.sips) ? data.sips : [];
+        state.loans = Array.isArray(data.loans) ? data.loans : [];
+        await Promise.all([
+          saveKey(KEYS.emis, state.emis), saveKey(KEYS.expenses, state.expenses),
+          saveKey(KEYS.banks, state.banks), saveKey(KEYS.sips, state.sips), saveKey(KEYS.loans, state.loans)
+        ]);
+        renderAll();
+        alert('Data wapas aa gaya!');
+      }catch(err){
+        alert('Ye sahi backup file nahi lag rahi. Sahi wali .json file chuno.');
+      }
+      e.target.value = '';
+    };
+    reader.readAsText(file);
+  });
+
+  document.getElementById('reset-all-btn').addEventListener('click', async function(){
+    if(!confirm('Pakka? Sara data hamesha ke liye delete ho jayega.')) return;
+    state = { emis:[], expenses:[], banks:[], sips:[], loans:[] };
+    await Promise.all([
+      saveKey(KEYS.emis, []), saveKey(KEYS.expenses, []),
+      saveKey(KEYS.banks, []), saveKey(KEYS.sips, []), saveKey(KEYS.loans, [])
+    ]);
+    renderAll();
+  });
+
+  function renderAll(){
+    updateBankDatalist();
+    renderDashboard();
+    renderEMI();
+    renderKharcha();
+    renderBanks();
+    renderSIP();
+    renderUdhar();
+  }
+
+  async function init(){
+    setToday();
+    const [emis, expenses, banks, sips, loans] = await Promise.all([
+      loadKey(KEYS.emis), loadKey(KEYS.expenses), loadKey(KEYS.banks), loadKey(KEYS.sips), loadKey(KEYS.loans)
+    ]);
+    state.emis = emis; state.expenses = expenses; state.banks = banks; state.sips = sips; state.loans = loans;
+    renderAll();
+    document.getElementById('loading-screen').style.display='none';
+    document.getElementById('main-content').style.display='block';
+  }
+
+  document.getElementById('change-pin-btn').addEventListener('click', function(){
+    const current = localStorage.getItem(PIN_KEY);
+    const old = prompt('Purana PIN daalein:');
+    if(old===null) return;
+    if(old!==current){ alert('Galat PIN.'); return; }
+    const np1 = prompt('Naya 4-digit PIN daalein:');
+    if(np1===null) return;
+    if(!/^\d{4}$/.test(np1)){ alert('4 digit ka hi PIN daalein.'); return; }
+    const np2 = prompt('Naya PIN dobara daalein:');
+    if(np2===null) return;
+    if(np1!==np2){ alert('Dono PIN match nahi hue.'); return; }
+    localStorage.setItem(PIN_KEY, np1);
+    alert('PIN badal gaya!');
+  });
+
+  document.getElementById('excel-export-btn').addEventListener('click', exportToExcel);
+  document.getElementById('drive-connect-btn').addEventListener('click', connectGoogle);
+  document.getElementById('drive-sync-now-btn').addEventListener('click', function(){
+    driveUpload().catch(()=>alert('Sync nahi ho paya, dubara try karo.'));
+  });
+  document.getElementById('drive-restore-btn').addEventListener('click', function(){
+    driveDownloadAndApply(true).catch(()=>alert('Drive se data laane me dikkat aayi.'));
+  });
+  waitForGoogleAndInit(20);
+
+  initLock();
+})();
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('./service-worker.js');
+  });
+}
+</script>
+</body>
+</html>
